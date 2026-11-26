@@ -1,15 +1,19 @@
-# Third Party Notices
+# 第三者コードとライセンス
 
 ## OpenSekai
 
-本项目使用并修改了 OpenSekai 的谱面解析、基础音符与判定、对象池、长条绘制及部分显示和工具代码。相关实现主要位于 `Assets/Scripts/FFrameWork`。当前目录名和命名空间不表示这些基础实现均为本项目原创。
+本作品では、[OpenSekai](https://github.com/cubeww/OpenSekai) の次の二つのクラスを主な基盤として利用・改修しています。
 
-- 上游项目：https://github.com/cubeww/OpenSekai
-- 许可证来源：https://github.com/cubeww/OpenSekai/blob/32c91d90c7e18135fef1a214144cce3fb756b3e5/LICENSE
-- 上述提交用于核对许可证，不代表已经确定了最初引入代码的提交版本。
-- 本项目开发与改造中使用了 AI，包括部分 UI 实现、问题排查和代码修改。
+| 主な利用元 | 利用内容 |
+| --- | --- |
+| [LiveLogic.cs](https://github.com/cubeww/OpenSekai/blob/32c91d90c7e18135fef1a214144cce3fb756b3e5/Assets/Scripts/Assembly-CSharp/Sekai/Core/Live/LiveLogic.cs) | 演奏進行、入力・判定候補の処理、ノーツ実行の基盤 |
+| [Converter.cs](https://github.com/cubeww/OpenSekai/blob/32c91d90c7e18135fef1a214144cce3fb756b3e5/Assets/Scripts/Assembly-CSharp/Sekai/SUS/Converter.cs) | SUS 譜面解析、音符情報の変換と長条ノーツの構築 |
 
-以下为上游 MIT 许可证全文，适用于其相应代码：
+表示・入力などの周辺実装は設計上の参考にしています。一部のノーツ、表示、オブジェクトプール、描画および補助処理には、上流のコードを改修して利用した部分も含まれます。関連コードは主に Assets/Scripts/FFrameWork にあります。
+
+上記リンクは確認時点のコミットを固定したものです。最初にコードを取り込んだ版を特定するものではありません。開発・改修には AI 支援も利用しています。
+
+OpenSekai の著作権表示と MIT ライセンスの原文を以下に保持します。ライセンス原文は翻訳せず、そのまま掲載しています。
 
 ```text
 MIT License
@@ -39,8 +43,10 @@ SOFTWARE.
 
 FMOD by Firelight Technologies Pty Ltd.
 
-本项目依赖 FMOD for Unity 2.03.14。FMOD 软件与运行库遵循其自己的许可，不包含在 OpenSekai 的 MIT 授权内。源码仓库排除 `Assets/Plugins/FMOD`，开发者需单独导入插件。
+本作品は FMOD for Unity 2.03.14 を使用しています。FMOD のソフトウェアとランタイムには独自のライセンスが適用されます。OpenSekai の MIT ライセンスには含まれません。配布パッケージ内の FMOD-LICENSE.txt もご確認ください。
 
-## 音乐与其他资源
+## フォントとその他の素材
 
-音乐、视频、封面、字体、贴图、Prefab 和 Shader 参考资源按各自的来源和许可处理。OpenSekai 的 MIT 声明不自动授权原作或其他第三方的资源。本文件不对全部项目文件作统一的 MIT 授权。
+フォントの利用条件は FONT-LICENSE-Zebulon.txt および FONT-LICENSE-UnityDances.txt をご確認ください。これらのライセンス文書は原文を保持しています。
+
+音楽、動画、ジャケット、画像、Prefab、シェーダー参考素材などは、それぞれの出典と利用条件に従います。OpenSekai の MIT ライセンスが、原作や第三者の素材を自動的に許諾するものではありません。本書は、すべてのプロジェクトファイルに一律の MIT ライセンスを付与するものではありません。
