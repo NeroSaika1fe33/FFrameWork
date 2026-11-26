@@ -33,29 +33,33 @@ GitRelease.zip をすべて展開し、GitRelease フォルダー内の My proje
 
 ## ソースコードと開発環境
 
-Windows 向けのビルド済みデモと、Assets/Scripts/FFrameWork 以下の全コードを公開しています。実行版は Releases、実装は Assets/Scripts/FFrameWork をご覧ください。音楽・動画・Bank・シーン・Prefab・画像などの実行用素材は、配布範囲を確認するまでソースリポジトリには含めていません。
+Windows 向けのビルド済みデモと、Unity プロジェクトのソースコードを公開しています。実行版は Releases、実装は Assets/Scripts/FFrameWork をご覧ください。
 
 - Unity：6000.4.5f1
 - FMOD for Unity：2.03.14
 - メインシーン：Assets/Scenes/xxAxxLive.unity
 
-### ソースコードを確認する
+### プロジェクトを開く
 
-1. このリポジトリを clone し、Assets/Scripts/FFrameWork の各クラスを確認してください。
-2. Packages と ProjectSettings には、元の Unity プロジェクトの依存関係と設定を保存しています。
-3. Unity 上で開発する場合は、FMOD for Unity 2.03.14 を Assets/Plugins/FMOD に別途導入してください。
-4. エディター上で元のゲームを再現するには、未公開のシーン・Prefab・画像・音声なども必要です。すぐにプレイする場合は Releases の実行版をご利用ください。
+1. Git LFS をインストールし、このリポジトリを clone して git lfs pull を実行します。
+2. Unity Hub で、Assets・Packages・ProjectSettings があるリポジトリ直下を開きます。
+3. FMOD for Unity 2.03.14 を Assets/Plugins/FMOD に導入します。FMOD プラグイン本体は、このソースコードには含めていません。
+4. Unity の読み込みとコンパイルが完了したら、Assets/Scenes/xxAxxLive.unity を開きます。
 
 .sln と .csproj は Unity が生成するため、リポジトリには含めていません。Unity から C# スクリプトを Rider で開くと、IDE 用のプロジェクトを生成できます。
 
 ### 主なディレクトリ
 
 - Assets/Scripts/FFrameWork：譜面解析、演奏進行、入力、判定、音響と表示の実装。
-- 元のプロジェクトの Assets/Charts、Assets/StreamingAssets、Assets/Shader：実行用データや描画ファイルの配置先です。現在のソース公開範囲には含めていません。
+- Assets/Charts：譜面テキスト。
+- Assets/StreamingAssets：実行時に使用する譜面と FMOD Bank。
+- Assets/Shader：シェーダー。
 - Packages / ProjectSettings：Unity の依存関係と設定。
 - [Docs/Interview/06-作品の工夫した点.md](Docs/Interview/06-作品の工夫した点.md)：日本語の作品紹介と五つの技術説明。
 
 Library・Temp・IDE のキャッシュ、作業用の出力フォルダー、プレイ記録は含めていません。FMOD Studio の編集用音声プロジェクトは、このリポジトリには含まれていません。
+
+RoughSketch「666」と、かねこちはる「WHITEOUT」の音声ファイルは公開対象から除外しています。公開版の選曲データでは使用していません。
 
 FMOD by Firelight Technologies Pty Ltd.
 

@@ -62,14 +62,6 @@ sysinfo.txt
 # Builds
 *.apk
 
-# Public source edition: runtime media and scene assets remain local.
-/Assets/*
-!/Assets/Scripts/
-!/Assets/Scripts.meta
-/Assets/Scripts/*
-!/Assets/Scripts/FFrameWork/
-!/Assets/Scripts/FFrameWork.meta
-
 # Local publication staging and editor state
 /.idea/
 /.vscode/
@@ -94,6 +86,12 @@ sysinfo.txt
 !/Docs/Interview/11-*.md
 /Assets/StreamingAssets/PlayRecords/**/*.json
 /Assets/StreamingAssets/PlayRecords/**/*.json.meta
+
+# Local music files excluded from public distribution (including Unity metadata).
+/Assets/Audio/Music/RoughSketch - 666 (Extreme Full Ver.).mp3
+/Assets/Audio/Music/RoughSketch - 666 (Extreme Full Ver.).mp3.meta
+/Assets/Audio/Music/かねこちはる - WHITEOUT.mp3
+/Assets/Audio/Music/かねこちはる - WHITEOUT.mp3.meta
 *.aab
 *.unitypackage
 *.unitypackage.meta
