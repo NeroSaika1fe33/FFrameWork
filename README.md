@@ -27,7 +27,7 @@ GitRelease.zip をすべて展開し、GitRelease フォルダー内の My proje
 - **[LiveLogic.cs](https://github.com/cubeww/OpenSekai/blob/32c91d90c7e18135fef1a214144cce3fb756b3e5/Assets/Scripts/Assembly-CSharp/Sekai/Core/Live/LiveLogic.cs)**：演奏進行、入力と判定候補の対応付け、ノーツ処理の基盤として利用・改修しています。
 - **[Converter.cs](https://github.com/cubeww/OpenSekai/blob/32c91d90c7e18135fef1a214144cce3fb756b3e5/Assets/Scripts/Assembly-CSharp/Sekai/SUS/Converter.cs)**：SUS 譜面解析の基盤として利用し、本作品向けのノーツや記述方法に合わせて拡張しています。
 
-表示・入力などの周辺クラスは、設計や処理の参考にしています。また、一部の表示、ノーツ、オブジェクトプール、補助処理には、上流コードを改修して利用した実装も含まれます。FFrameWork という名称は、これらの基盤をすべて独力で新規実装したことを示すものではありません。
+表示・入力などの周辺クラスは、設計や処理の参考にしています。
 
 開発には AI 支援を利用しており、UI 実装や不具合の調査・修正にも活用しています。著作権表示と MIT ライセンスの全文は [第三者コードとライセンス](THIRD_PARTY_NOTICES.md) に記載しています。
 
@@ -38,7 +38,6 @@ GitRelease.zip をすべて展開し、GitRelease フォルダー内の My proje
 - Unity：6000.4.5f1
 - FMOD for Unity：2.03.14
 - メインシーン：Assets/Scenes/xxAxxLive.unity
-- ソース公開時の音声・動画・Bank ファイルは Git LFS で管理する予定です。
 
 FMOD by Firelight Technologies Pty Ltd.
 
