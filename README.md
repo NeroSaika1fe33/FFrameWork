@@ -55,7 +55,7 @@ Windows 向けのビルド済みデモと、Unity プロジェクトのソース
 - Assets/StreamingAssets：実行時に使用する譜面と FMOD Bank。
 - Assets/Shader：シェーダー。
 - Packages / ProjectSettings：Unity の依存関係と設定。
-- [Docs/Interview/06-作品の工夫した点.md](Docs/Interview/06-作品の工夫した点.md)：日本語の作品紹介と五つの技術説明。
+- [作品の工夫した点](Docs/Interview/06-作品の工夫した点.md)：五つの工夫と、SonoriX_Rebuild で進めている自作譜面解析器の開発について。
 
 Library・Temp・IDE のキャッシュ、作業用の出力フォルダー、プレイ記録は含めていません。FMOD Studio の編集用音声プロジェクトは、このリポジトリには含まれていません。
 

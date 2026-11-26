@@ -77,13 +77,8 @@ sysinfo.txt
 /Docs/*
 !/Docs/Interview/
 /Docs/Interview/*
-!/Docs/Interview/05-*.md
 !/Docs/Interview/06-*.md
-!/Docs/Interview/07-*.md
-!/Docs/Interview/08-*.md
-!/Docs/Interview/09-*.md
-!/Docs/Interview/10-*.md
-!/Docs/Interview/11-*.md
+!/Docs/Interview/工夫した点/
 /Assets/StreamingAssets/PlayRecords/**/*.json
 /Assets/StreamingAssets/PlayRecords/**/*.json.meta
 
