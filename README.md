@@ -64,5 +64,5 @@ Library・Temp・IDE のキャッシュ、作業用の出力フォルダー、�
 
 ### 他の資料
 
-プレイ動画：https://drive.google.com/drive/folders/1-A5zfzy5HMVTP8RKAiCYtJ0z7NjE70-V?usp=drive_link
+プレイ動画：https://drive.google.com/drive/folders/1-A5zfzy5HMVTP8RKAiCYtJ0z7NjE70-V?usp=drive_link  
 専用コントローラーと企画の資料：https://drive.google.com/drive/folders/1A1tMknwVeTgXUlJyg70lijrpvbUSBoBz?usp=drive_link
