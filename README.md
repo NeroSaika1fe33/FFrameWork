@@ -61,3 +61,8 @@ Windows 向けのビルド済みデモと、Unity プロジェクトのソース
 Library・Temp・IDE のキャッシュ、作業用の出力フォルダー、プレイ記録は含めていません。FMOD Studio の編集用音声プロジェクトは、このリポジトリには含まれていません。
 
 音楽、動画、画像、フォントなどは、それぞれの権利と利用条件に従います。コードの MIT ライセンスは、第三者の素材を一括して許諾するものではありません。
+
+### 他の資料
+
+プレイ動画：https://drive.google.com/drive/folders/1-A5zfzy5HMVTP8RKAiCYtJ0z7NjE70-V?usp=drive_link
+専用コントローラーと企画の資料：https://drive.google.com/drive/folders/1A1tMknwVeTgXUlJyg70lijrpvbUSBoBz?usp=drive_link
