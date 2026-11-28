@@ -3,6 +3,7 @@ using UnityEngine.Serialization;
 
 namespace FFrameWork.Live
 {
+    // LiveFrontView の Inspector 参照定義。実際の表示制御は別の partial ファイルに置く。
     public partial class LiveFrontView
     {
         // ライブ前面表示のルート

@@ -92,7 +92,7 @@ Shader "Custom/CyberGlitchBackground"
             float4 _ColorB;
             float _GlitchAmount;
 
-            // 数学稳定版 2D 伪随机 Hash
+            // 2D 座標から疑似乱数を生成するハッシュ関数
             float2 rand2(float2 p)
             {
                 float3 p3 = frac(float3(p.xyx) * float3(0.1031, 0.1030, 0.9730));
@@ -100,13 +100,13 @@ Shader "Custom/CyberGlitchBackground"
                 return frac((p3.xx + p3.yz) * p3.zy);
             }
 
-            // 【DEBUG 修复版】安全的随机电子坐标生成函数
+            // 粒子 ID と時間から、揺らぎとグリッチを含む位置を生成する。
             float2 getVoronoiRandomPos(float particleID, float time, float seedOffset)
             {
                 float2 cellID = float2(particleID * 1.71, seedOffset * 3.14);
                 float2 baseRand = rand2(cellID);
                 
-                // 平滑游走相位
+                // sin / cos で位相をずらし、滑らかな揺らぎを加える。
                 float2 jitter = float2(
                     sin(time * 1.5 + baseRand.x * 12.56 + seedOffset),
                     cos(time * 1.2 + baseRand.y * 12.56 + particleID)
@@ -114,10 +114,10 @@ Shader "Custom/CyberGlitchBackground"
                 
                 float2 pos = (baseRand - 0.5) * 1.2 + jitter * 0.25;
 
-                // --- 🛡️ 核心 Bug 修复点 1：控制 tan() 输入角在 [-PI/2, PI/2] 安全周期内 ---
+                // tan の入力角を PI 周期で折り返し、時間による角度の増大を抑える。
                 float tanAngle = fmod(time * 0.5 + baseRand.x * 6.28, PI) - (PI * 0.5);
                 
-                // --- 🛡️ 核心 Bug 修复点 2：使用 clamp 截断极值，防止无限大 Inf/NaN 污染屏幕 ---
+                // tan の出力を -10 ～ 10 に制限し、グリッチによる変位を抑える。
                 float rawTan = tan(tanAngle);
                 float safeTan = clamp(rawTan, -10.0, 10.0);
 
@@ -148,23 +148,23 @@ Shader "Custom/CyberGlitchBackground"
             {
                 fixed4 background = tex2D(_MainTex, i.uv) + _TextureSampleAdd;
 
-                // 1. 归一化屏幕坐标系 [-0.5, 0.5] 并修正宽高比
+                // 1. UV の中心を原点へ移し、画面のアスペクト比を補正する。
                 float2 uv = (i.uv - 0.5);
                 uv.x *= _ScreenParams.x / _ScreenParams.y;
 
-                // 2. 网格坐标计算与防零保护
+                // 2. グリッド座標を求め、後続の除算で使う値に下限を設ける。
                 float2 gridBoundUV = getGridPosition(uv);
                 float2 cellBoundUV = gridBoundUV - round(gridBoundUV);
-                cellBoundUV = max(abs(cellBoundUV), 0.005); // 稍微调高下限，防止网格边界闪光过强
+                cellBoundUV = max(abs(cellBoundUV), 0.005); // 下限を設け、グリッド境界での過剰な発光を抑える。
 
                 float intensityA = 0.0;
                 float intensityB = 0.0;
 
-                // --- 🛡️ 核心 Bug 修复点 3：限制 time 的最大累加值，防止运行数小时后精度溢出 ---
+                // 時間を 3600 秒周期で折り返し、長時間再生時の計算値の増大を抑える。
                 float time = fmod(_Time.y, 3600.0); 
                 int targetCount = (int)clamp(round(_TargetCount), 1.0, 30.0);
 
-                // 3. Voronoi 随机电子系统 A
+                // 3. Voronoi 表現用の疑似乱数位置を使い、発光成分 A を加算する。
                 for (int tA = 0; tA < targetCount; ++tA)
                 {
                     float f_targetIndex = float(tA);
@@ -180,7 +180,7 @@ Shader "Custom/CyberGlitchBackground"
                     intensityA += energy;
                 }
 
-                // 4. Voronoi 随机电子系统 B
+                // 4. 速度とシードを変えた位置を使い、発光成分 B を加算する。
                 for (int tB = 0; tB < targetCount; ++tB)
                 {
                     float f_targetIndex = float(tB);
@@ -196,11 +196,11 @@ Shader "Custom/CyberGlitchBackground"
                     intensityB += energy;
                 }
 
-                // 全局亮度防爆
+                // 発光成分の上限を設け、過剰な明るさを抑える。
                 intensityA = clamp(intensityA * _GlowIntensity, 0.0, 10.0);
                 intensityB = clamp(intensityB * _GlowIntensity, 0.0, 10.0);
 
-                // 5. 核心白光 + 双色色彩合成
+                // 5. 中心の白い発光に、A / B の 2 色を合成する。
                 float totalEnergy = intensityA + intensityB;
                 float3 col = float3(smoothstep(0.2, 1.0, totalEnergy), 
                                     smoothstep(0.2, 1.0, totalEnergy), 
@@ -209,11 +209,11 @@ Shader "Custom/CyberGlitchBackground"
                 col += intensityA * _ColorA.rgb;
                 col += intensityB * _ColorB.rgb;
 
-                // 6. Vignette 暗角
+                // 6. ビネットを適用し、画面の周辺を暗くする。
                 float vignette = smoothstep(1.2, 0.2, length(uv));
                 col *= vignette;
 
-                // 7. 与背景图片混合与 UI Clip 裁切
+                // 7. 背景画像と合成し、UI のクリッピングとアルファ切り抜きを適用する。
                 col = (background.rgb + col * _EffectIntensity) * i.color.rgb;
                 fixed alpha = saturate(background.a * i.color.a);
 

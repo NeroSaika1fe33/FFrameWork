@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 namespace FFrameWork.Live
 {
+    // クリアゲージの値をバー幅・到達色・しきい値マーカーへ反映し、ポーズ入力を接続する。
     public class ClearGaugeView : MonoBehaviour
     {
         [SerializeField] private Image gaugeFillImage;
@@ -20,6 +21,8 @@ namespace FFrameWork.Live
         private int currentClearGauge;
         private RectTransform gaugeFillRect;
 
+        // 最大値と通過しきい値を設定し、バー・マーカー・ポーズボタンを初期化する。
+        // 無効な最大値は 100、無効なしきい値は最大値の 70%。warningClearGauge は互換用で現在未使用。
         public void Setup(
             Action onPause = null,
             int maxClearGauge = -1,
@@ -37,11 +40,14 @@ namespace FFrameWork.Live
             Execute(0);
         }
 
+        // リトライ時などにゲージ表示を 0 へ戻す。
         public void Clear()
         {
             Execute(0);
         }
 
+        // 値を 0 ～ 最大値へ丸め、しきい値到達に応じた色とバー幅を更新する。
+        // 文字列は現在値に % を付ける実装で、最大値に対する比率への変換はバー幅だけに適用する。
         public void Execute(int clearGauge)
         {
             currentClearGauge = Mathf.Clamp(clearGauge, 0, maxClearGauge);
@@ -59,6 +65,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // バーを左基準で伸縮できるようにアンカーとピボットをそろえる。
         private void CacheGaugeFillRect()
         {
             if (gaugeFillImage == null)
@@ -72,6 +79,7 @@ namespace FFrameWork.Live
             gaugeFillRect.pivot = new Vector2(0f, gaugeFillRect.pivot.y);
         }
 
+        // Image.fillAmount ではなく、親 RectTransform の幅に対する比率でバーの横幅を変える。
         private void SetGaugeFillRate(float rate)
         {
             if (gaugeFillRect == null)
@@ -89,6 +97,7 @@ namespace FFrameWork.Live
             gaugeFillRect.sizeDelta = sizeDelta;
         }
 
+        // 最大値に対するしきい値の比率へ、マーカーの水平アンカーを合わせる。
         private void SetupClearMarker()
         {
             if (clearMarker == null)
@@ -109,6 +118,7 @@ namespace FFrameWork.Live
             clearMarker.anchoredPosition = position;
         }
 
+        // 既存リスナーを解除して今回の処理を登録する。処理がない場合はボタンを無効にする。
         private void SetupPauseButton(Action onPause)
         {
             if (pauseButton == null)

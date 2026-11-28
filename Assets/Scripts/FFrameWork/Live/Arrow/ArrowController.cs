@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 
 namespace FFrameWork.Live
 {
+    // デバイスの操作を ArrowLogic に渡し、判定枠の位置・幅を各ビューへ反映する。
     public class ArrowController : MonoBehaviour
     {
         // 矢印本体の表示を更新するビュー
@@ -24,12 +25,12 @@ namespace FFrameWork.Live
         // 端（|X| >= 180〜270）における基本移動感度
         [SerializeField] private float sensitivity = 3f;
 
-        // ⚡ [调整] 中央区域衰减设置
+        // 中央領域での移動感度の補正設定
         [Header("Center Sensitivity Settings")]
-        // 衰减结束的临界 X 坐标 (180.0f)
+        // 感度補正を適用する中央領域の境界（X 座標の絶対値）
         [SerializeField] private float centerZoneThreshold = 180.0f; 
 
-        // 正中央 (X = 0) 时的敏感度衰减系数 (例如 0.5 表示中央敏感度削减为 50%)
+        // 中心（X = 0）での感度倍率。0.5 なら基準感度の 50% になる。
         [SerializeField] private float centerSensitivityMultiplier = 0.8f; 
 
         // 初期化時のワールド X 座標
@@ -127,7 +128,7 @@ namespace FFrameWork.Live
             inputManager.EnableInLiveInput();
         }
 
-        // ⚡ [核心修改] 中央区域 (0 ~ 180) 衰减敏感度，180 外侧恢复完整敏感度
+        // 中央領域では感度を抑え、境界へ近づくほど通常感度へ戻す。範囲は centerZoneThreshold で指定する。
         private float ReadArrowPositionDelta()
         {
             if (ignoreNextPositionDelta)
@@ -148,18 +149,18 @@ namespace FFrameWork.Live
             {
                 float absX = Mathf.Abs(arrowLogic.CurrentX);
 
-                // 在中央区域 |X| < 180 时进行平滑削弱
+                // 中央領域内では、中心からの距離に応じて感度を補正する。
                 if (absX < centerZoneThreshold)
                 {
-                    // 计算从 X = 0 (t = 0) 到 X = 180 (t = 1) 的归一化进度
+                    // 中心を 0、中央領域の境界を 1 とする補間係数を求める。
                     float t = Mathf.InverseLerp(0f, centerZoneThreshold, absX);
 
-                    // 在 centerSensitivityMultiplier (中央最迟钝) 与 1.0f (180 处恢复正常) 之间平滑插值
+                    // 中心の感度倍率から 1.0 まで線形補間する。
                     float multiplier = Mathf.Lerp(centerSensitivityMultiplier, 1.0f, t);
 
                     currentSensitivity *= multiplier;
                 }
-                // 当 |X| >= 180 时，multiplier 保持 1.0，使用完整的 sensitivity
+                // 中央領域の外側では基準の sensitivity をそのまま使う。
             }
 
             return rawDelta * currentSensitivity;
@@ -181,6 +182,7 @@ namespace FFrameWork.Live
             frameDebugView?.Apply(currentX, currentSize);
         }
 
+        // 幅を指定段階へ切り替え、表示も即座に更新する。
         public void SetSizeStage(int stageIndex)
         {
             SetupArrowLogic();
@@ -188,17 +190,20 @@ namespace FFrameWork.Live
             ApplyArrowViews();
         }
 
+        // レーン数を幅の段階へ変換する。1 未満は 1 とし、最も近い段階を選ぶ。
         public void SetSizeByLaneWidth(int laneWidth)
         {
             int stageIndex = ArrowLogic.GetStageIndexForLaneWidth(Mathf.Max(1, laneWidth));
             SetSizeStage(stageIndex);
         }
 
+        // 判定処理へ渡す現在の枠状態を返す。ロジック未初期化なら既定値を返す。
         public ArrowJudgmentFrame GetArrowJudgmentFrame()
         {
             return HasLogic ? arrowLogic.GetArrowJudgmentFrame() : default;
         }
 
+        // 開曲時の幅と中央位置へ戻し、直後の入力差分を 1 回無視して位置飛びを抑える。
         public void ResetForSong(int initialLaneWidth)
         {
             SetupArrowLogic();
@@ -208,12 +213,14 @@ namespace FFrameWork.Live
             ApplyArrowViews();
         }
 
+        // 長押しによる幅変更の開始値と目標段階を記録する。
         public void BeginLongSizeChange(int targetStageIndex)
         {
             SetupArrowLogic();
             arrowLogic.BeginLongSizeChange(targetStageIndex);
         }
 
+        // 0 ～ 1 の進捗をロジックへ渡して幅を補間し、表示へ反映する。
         public void UpdateLongSizeChange(float progress)
         {
             if (!HasLogic)
@@ -225,6 +232,7 @@ namespace FFrameWork.Live
             ApplyArrowViews();
         }
 
+        // 成功時は目標段階へ、失敗時は途中の状態に応じた段階へ確定する。
         public void FinishLongSizeChange(bool success)
         {
             if (!HasLogic)
@@ -236,6 +244,7 @@ namespace FFrameWork.Live
             ApplyArrowViews();
         }
 
+        // 幅は維持して位置だけを中央へ戻し、次の入力差分を無視する。
         public void ResetPositionToCenter()
         {
             SetupArrowLogic();
@@ -245,6 +254,7 @@ namespace FFrameWork.Live
             ApplyArrowViews();
         }
 
+        // マウスが接続されている場合だけ、実カーソルを画面中央へ移動する。
         private void CenterMouseCursor()
         {
             if (Mouse.current == null)
@@ -256,6 +266,7 @@ namespace FFrameWork.Live
             Mouse.current.WarpCursorPosition(screenCenter);
         }
 
+        // 自身が生成した入力管理を解放し、カーソルの表示とロック状態を戻す。
         private void OnDestroy()
         {
             DisposeOwnedInputManager();
@@ -265,6 +276,7 @@ namespace FFrameWork.Live
             Cursor.lockState = CursorLockMode.None;
         }
 
+        // 外部から共有された InputManager は破棄せず、自身が所有するものだけを解放する。
         private void DisposeOwnedInputManager()
         {
             if (!ownsInputManager)

@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace FFrameWork.Live
 {
+    // 判定枠の X 位置と、移動できるワールド座標の範囲。
     public struct SliderArrowModel
     {
         // 現在の矢印 X 座標
@@ -14,6 +15,7 @@ namespace FFrameWork.Live
         public float MaxX;
     }
 
+    // 判定枠のサイズと上下限。判定時には CurrentSize を左右それぞれの半幅として使う。
     public struct SliderArrowSizeModel
     {
         // 現在の矢印サイズ
@@ -26,6 +28,7 @@ namespace FFrameWork.Live
         public float MaxSize;
     }
 
+    // 入力判定に渡す枠の状態。位置、半幅、サイズ段階と長押し変化の情報をまとめる。
     public struct ArrowJudgmentFrame
     {
         // 矢印の位置状態
@@ -56,6 +59,7 @@ namespace FFrameWork.Live
         public int LongTargetStageIndex;
     }
 
+    // 判定枠の位置と 9 段階の幅を管理する。デバイスや描画に依存せず、補間と終了時の確定を担当する。
     public class ArrowLogic
     {
         // 矢印サイズ段階の数

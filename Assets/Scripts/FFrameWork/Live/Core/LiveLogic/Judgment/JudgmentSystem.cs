@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace FFrameWork.Live
 {
+    // 入力とノーツの候補を絞り込み、同じ物理入力の重複消費を防いで判定する。
     internal sealed class JudgmentSystem
     {
         private const int CandidateCapacity = 128;
@@ -22,6 +23,8 @@ namespace FFrameWork.Live
             this.liveBundleBuildData = liveBundleBuildData;
         }
 
+        // 時刻順の候補作成、入力間の競合解消、物理入力単位の選別、実判定の順に処理する。
+        // 渡された候補リストを直接更新し、処理後に activeInputList を空にする。
         public void Execute(
             List<NoteBase> judgmentNoteList,
             List<InputTmp> activeInputList,
@@ -41,6 +44,7 @@ namespace FFrameWork.Live
             EvaluateJudgment();
         }
 
+        // 候補を譜面時刻の昇順へ安定ソートし、同時刻の元の順序を保つ。
         private void SortJudgmentNotesByTime()
         {
             for (int i = 1; i < judgmentNoteList.Count; i++)
@@ -56,6 +60,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // 入力元に対応する種類だけを対象に、レーンと時間条件を満たすノーツを入力の候補へ追加する。
         private void AllocateInputJudgableEachNotes()
         {
             for (int i = 0; i < judgmentNoteList.Count; i++)
@@ -77,6 +82,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // 同じノーツを複数入力が候補に持つ場合、レーン距離の近い入力側へ割り当てる。
         private void OverlapJudgmentSorting()
         {
             for (int i = activeInputList.Count - 1; i >= 0; i--)
@@ -107,6 +113,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // 各入力の候補を優先度で比較し、一つの判定先に絞る。
         private void LeaveNotesFastGeneration()
         {
             for (int i = activeInputList.Count - 1; i >= 0; i--)
@@ -133,6 +140,8 @@ namespace FFrameWork.Live
             }
         }
 
+        // 進行度の大きさ、レーン距離の近さ、譜面時刻の早さ、ID の小ささの順に比較する。
+        // 戻り値が正なら左候補、負なら右候補を優先する。
         private int CompareCandidatePriority(NoteBase leftCandidate, InputTmp leftInput, NoteBase rightCandidate, InputTmp rightInput)
         {
             NoteBase left = SelectLeaveComparableNote(leftCandidate, leftInput, leftCandidate);
@@ -165,6 +174,8 @@ namespace FFrameWork.Live
             return 0;
         }
 
+        // 複合ノーツは未判定の押下時に先頭、それ以外は末尾を比較する。
+        // その子ノーツを判定できない場合は元の候補へ戻す。
         private NoteBase SelectLeaveComparableNote(NoteBase note, InputTmp input, NoteBase fallbackNote)
         {
             if (note.NoteList.Count == 1) return note;
@@ -183,6 +194,7 @@ namespace FFrameWork.Live
             return comparable.IsJudgment(ref input.liveInput, lane) ? comparable : fallbackNote;
         }
 
+        // 複数レーンに展開された入力を物理入力キーでまとめ、グループ全体で最優先の組だけを残す。
         private void LeavePhysicalInputCandidates()
         {
             physicalInputKeyList.Clear();
@@ -232,6 +244,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // 入力元を上位ビットに含め、固定キーは inputId、可動枠系は入力元単位で同一操作として扱う。
         private static int GetPhysicalInputKey(InputTmp input)
         {
             if (input == null) return 0;
@@ -250,6 +263,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // 確定候補を判定した後、固定レーン入力をタップ演出へ通知し、一時候補を消去する。
         private void EvaluateJudgment()
         {
             for (int i = 0; i < activeInputList.Count; i++)
@@ -280,6 +294,7 @@ namespace FFrameWork.Live
             activeInputList.Clear();
         }
 
+        // 演奏中の SliderFlick はワールド座標からレーンを再計算し、その他は収集済みのレーンを使う。
         private float ConvertLaneBy(NoteBase note, InputTmp input)
         {
             if (note.Category != NoteCategory.SliderFlick || note.State != NoteState.Playing)
@@ -289,6 +304,7 @@ namespace FFrameWork.Live
             return GetJudgmentLane(input.liveInput.worldPosition, !note.FinishFirstAction);
         }
 
+        // 判定位置間を補間して小数レーンを返す。許容範囲外や判定位置未設定の場合は -1 を返す。
         private float GetJudgmentLane(Vector3 touchPosition, bool checkJudgmentY)
         {
             Vector2[] judgmentPositions = LiveConfig.JudgmentPositions;
@@ -311,6 +327,7 @@ namespace FFrameWork.Live
             return judgmentPositions.Length - 1;
         }
 
+        // 入力元とノーツ種類の組合せを制限する。SliderLong と VolumeFlickLong は HoldNoteSystem 側で扱う。
         private static bool CanJudgeByInputSource(LiveInputSource source, NoteBase note)
         {
             if (note == null) return false;

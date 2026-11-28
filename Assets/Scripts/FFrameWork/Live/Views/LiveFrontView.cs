@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace FFrameWork.Live
 {
+    // ライブのノーツ・判定・ゲージ・タップ演出を表示するビュー。判定や得点計算自体は行わない。
     public partial class LiveFrontView : LiveViewBase
     {
         [Header("Render & Camera Dependencies")]

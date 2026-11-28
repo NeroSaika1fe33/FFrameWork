@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace FFrameWork.Live
 {
+    // 固定キーと可動判定枠の操作を、判定で扱うレーン付き LiveInput にそろえる。
     internal sealed class LiveInputCollector
     {
         private static readonly int[] FixedLaneTapEffectLanes = { 4, 6, 8, 10 };
@@ -11,6 +12,7 @@ namespace FFrameWork.Live
         private const int ArrowInputIdBase = 2000;
         private const int ArrowVolumeInputIdBase = 3000;
 
+        // 4 つの固定キーをレーン 4・6・8・10 に対応付け、取得できた入力を通知する。
         public void CollectFixedLaneInputs(InputManager inputManager, float musicTime, Action<int, LiveInput> addInput)
         {
             if (inputManager == null || addInput == null) return;
@@ -26,6 +28,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // 固定キーを先に集め、可動枠が有効ならフリー入力・横フリック・幅変更入力も収集する。
         public void CollectManualInputs(
             InputManager inputManager,
             ArrowController arrowController,
@@ -50,6 +53,8 @@ namespace FFrameWork.Live
             CollectArrowVolumeFlickInput(inputManager, musicTime, frameLeft, frameRight, addInput);
         }
 
+        // 一つのフリー入力を、判定枠と重なる各レーンの候補へ展開する。
+        // 展開後の多重判定は JudgmentSystem の物理入力単位の選別で防ぐ。
         private void CollectFreeLaneInput(
             InputManager inputManager,
             float musicTime,
@@ -72,6 +77,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // 幅操作の差分があるフレームだけ、枠内の各レーンへ縦方向の Moved 入力を作る。
         private void CollectArrowVolumeFlickInput(
             InputManager inputManager,
             float musicTime,
@@ -90,6 +96,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // 位置操作の差分があるフレームだけ、枠内の各レーンへ横方向の Moved 入力を作る。
         private void CollectSliderFlickInput(
             InputManager inputManager,
             float musicTime,
@@ -108,6 +115,7 @@ namespace FFrameWork.Live
             }
         }
 
+        // 固定キーの範囲・幅・ワールド座標を補完し、元の入力 ID とフェーズを保持して通知する。
         private void AddFixedLaneInput(int lane, ref LiveInput input, Action<int, LiveInput> addInput)
         {
             input.lane = lane;
@@ -119,6 +127,7 @@ namespace FFrameWork.Live
             addInput(lane, input);
         }
 
+        // フリー入力へレーン別の一時 ID と枠の範囲を設定する。
         private void AddFreeLaneInput(
             int lane,
             float frameLeft,
@@ -132,6 +141,7 @@ namespace FFrameWork.Live
             addInput(lane, input);
         }
 
+        // 幅操作を Y 差分に持つ入力を生成し、現在の楽曲時刻と判定枠情報を付ける。
         private void AddArrowVolumeFlickInput(
             int lane,
             float frameLeft,
@@ -150,6 +160,7 @@ namespace FFrameWork.Live
             addInput(lane, input);
         }
 
+        // 位置操作を X 差分に持つ入力を生成し、現在の楽曲時刻と判定枠情報を付ける。
         private void AddSliderFlickInput(
             int lane,
             float frameLeft,
@@ -168,6 +179,7 @@ namespace FFrameWork.Live
             addInput(lane, input);
         }
 
+        // 枠のワールド座標の左右端を小数レーンへ変換し、幅を最低 1 として格納する。
         private void SetFrameLane(ref LiveInput input, int lane, float frameLeft, float frameRight)
         {
             input.lane = lane;
@@ -177,6 +189,7 @@ namespace FFrameWork.Live
             input.worldPosition = GetLaneWorldPosition(lane);
         }
 
+        // レーン中心の左右半幅と判定枠の区間が重なるか確認する。境界への接触も含む。
         private static bool IsLaneOverlappingFrame(int lane, float frameLeft, float frameRight)
         {
             Vector2[] judgmentPositions = LiveConfig.JudgmentPositions;
@@ -190,6 +203,7 @@ namespace FFrameWork.Live
             return frameLeft <= laneRight && frameRight >= laneLeft;
         }
 
+        // レーン番号を有効範囲へ丸めて判定位置を取得する。未設定なら原点を返す。
         private Vector3 GetLaneWorldPosition(int lane)
         {
             Vector2[] judgmentPositions = LiveConfig.JudgmentPositions;
@@ -200,6 +214,7 @@ namespace FFrameWork.Live
             return new Vector3(position.x, position.y, 0f);
         }
 
+        // 判定位置の X 座標間を補間して小数レーンに変換し、範囲外は端のレーンへ丸める。
         private float GetLaneByWorldX(float worldX)
         {
             Vector2[] judgmentPositions = LiveConfig.JudgmentPositions;
@@ -220,6 +235,7 @@ namespace FFrameWork.Live
             return judgmentPositions.Length - 1;
         }
 
+        // 現在設定されている判定位置の数を返す。未設定なら 0。
         private static int GetJudgmentLaneCount()
         {
             Vector2[] judgmentPositions = LiveConfig.JudgmentPositions;

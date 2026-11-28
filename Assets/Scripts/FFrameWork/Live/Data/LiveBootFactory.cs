@@ -2,8 +2,11 @@ using UnityEngine;
 
 namespace FFrameWork.Live
 {
+    // 選曲・プレビュー共通の楽曲情報から、演奏開始に必要なデータを組み立てる。
     public static class LiveBootFactory
     {
+        // 楽曲情報、難易度、判定設定、音符速度を起動データへまとめる。song が null なら null を返す。
+        // 総ノーツ数が正のときだけプレビュー用のランクしきい値を補完する。
         public static FreeLiveBootData CreateFreeLiveBootData(SongCatalogItem song, bool isAuto)
         {
             if (song == null)
@@ -55,6 +58,7 @@ namespace FFrameWork.Live
             return bootData;
         }
 
+        // 音符速度を現在の共通設定で上書きする。曲固有のタイミング調整値は保持する。
         public static void ApplyGlobalPlayerSettings(LiveSettingData settings)
         {
             if (settings == null)
@@ -65,6 +69,8 @@ namespace FFrameWork.Live
             settings.NoteSpeed = LivePlayerSettings.NoteSpeed;
         }
 
+        // ノーツ数 × 1000 を基準にランクしきい値を作る。実際のプレイスコアを算出する処理ではない。
+        // 0 以下のノーツ数は 1 として扱う。
         public static MasterPlayLevelScore CreatePreviewScore(int playLevel, int totalNoteCount)
         {
             int noteCount = Mathf.Max(1, totalNoteCount);
@@ -80,6 +86,7 @@ namespace FFrameWork.Live
             };
         }
 
+        // 難易度を小文字のデータ識別名へ変換する。未指定の None は easy とする。
         public static string GetDifficultyName(MusicDifficulty difficulty)
         {
             return difficulty == MusicDifficulty.None ? "easy" : difficulty.ToString().ToLowerInvariant();
