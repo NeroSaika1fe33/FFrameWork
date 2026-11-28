@@ -1261,7 +1261,6 @@ GameObject:
   m_Component:
   - component: {fileID: 588076124}
   - component: {fileID: 588076125}
-  - component: {fileID: 588076127}
   m_Layer: 0
   m_Name: FrontUIView
   m_TagString: Untagged
@@ -1310,10 +1309,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FFrameWork.Live.LiveFrontView
   backgroundRenderer: {fileID: 0}
   deadMask: {fileID: 0}
-  cameraSizeUpdater: {fileID: 588076127}
-  cameraFOVUpdater: {fileID: 0}
   frontViewCamera: {fileID: 1133746895}
-  previewBrightness: 1
   explicitMainJudgeLane: {fileID: 0}
   explicitLiveSoundPlayer: {fileID: 0}
   liveRoot: {fileID: 0}
@@ -1376,23 +1372,6 @@ MonoBehaviour:
     defaultPrefab: {fileID: 8131311657963775769, guid: 395f6c8dfb7951f41b3edbca7c2da766, type: 3}
   - category: 7
     defaultPrefab: {fileID: 8131311657963775769, guid: c3e58a74d2f54a72bf01963c54c75289, type: 3}
---- !u!114 &588076127
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 588076123}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49bb23bb8505c5d45b067b2b8ed708de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FFrameWork.CameraSizeUpdater
-  baseWidth: 1920
-  baseHeight: 1080
-  pixelPerUnit: 108
-  baseType: 0
-  camera: {fileID: 1133746895}
 --- !u!1 &611987537
 GameObject:
   m_ObjectHideFlags: 0
@@ -2300,7 +2279,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58fa4ecab3f0427bbe6db59ced31c191, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FFrameWork.Live.AudioEffectController
-  logDebugInfo: 1
   effectGroups:
   - effectType: 0
     parameterBindings:
@@ -4417,18 +4395,10 @@ MonoBehaviour:
   previewInitialArrowLaneWidth: 2
   previewTitle: None
   previewArtist: Miku
-  previewLyricist: Miku
   previewComposer: Miku
-  previewArranger: Miku
-  previewVocalCaption: Miku
-  previewVocalType: Miku
-  previewVocalAssetBundleName: Miku
   previewJacket: {fileID: 2800000, guid: 03a26e761d338b040af11eebaf641e19, type: 3}
   isAuto: 0
   canSkipDisplayMusicInfo: 0
-  isCollaboration: 0
-  collaborationId: 0
-  collaborationLabel: 
   startOnAwake: 0
   musicStartOnAwake: 0
   liveStartWaitTime: 0

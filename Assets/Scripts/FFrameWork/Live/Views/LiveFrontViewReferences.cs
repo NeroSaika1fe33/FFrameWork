@@ -32,7 +32,7 @@ namespace FFrameWork.Live
         // タップエフェクトの生成先
         [SerializeField] private Transform effectRoot;
 
-        // エフェクト描画用カメラ
+        // タップエフェクトの投影行列を取得するカメラ
         [SerializeField] private Camera effectCamera;
 
         // 単発タップエフェクト Prefab

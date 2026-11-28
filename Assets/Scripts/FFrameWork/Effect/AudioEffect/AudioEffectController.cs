@@ -6,9 +6,6 @@ namespace FFrameWork.Live
     // ライブ中の操作に応じて FMOD エフェクトパラメータを制御する
     public class AudioEffectController : MonoBehaviour
     {
-        [Header("Debug Settings")]
-        [SerializeField] private bool logDebugInfo;
-
         [Header("FMOD Effect Configurations")]
         [SerializeField] private List<FmodEffectGroup> effectGroups = new List<FmodEffectGroup>();
         [SerializeField] private FmodAudioEffectSystem[] audioEffectSystems;
@@ -25,9 +22,6 @@ namespace FFrameWork.Live
 
         // ボリュームロングで現在使用中のフィルター種別
         private AudioEffectType activeVolumeLongEffectType = AudioEffectType.Free;
-
-        // いずれかの FMOD エフェクト枠が使用中か
-        public bool IsPlaying => audioEffectSystems != null && System.Array.Exists(audioEffectSystems, s => s != null && s.IsPlaying);
 
         private void Awake() => Setup();
 

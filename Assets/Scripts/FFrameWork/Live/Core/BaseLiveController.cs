@@ -51,15 +51,6 @@ namespace FFrameWork.Live
             BootData = bootData;
         }
 
-        // 楽曲イベントのパラメータ値を取得する
-        // parameterName: 取得対象のパラメータ名
-        // value: 取得できたパラメータ値
-        public virtual bool TryGetMusicEventParameter(string parameterName, out float value)
-        {
-            value = 0f;
-            return false;
-        }
-
         // 楽曲イベントのパラメータ値を設定する
         // parameterName: 設定対象のパラメータ名
         // value: 設定する値
@@ -121,11 +112,6 @@ namespace FFrameWork.Live
         // ライブを再開する
         public virtual void Resume()
         {
-        }
-
-        public virtual void ResumeNoCountDown()
-        {
-            Resume();
         }
 
         // 指定時刻からライブを継続する

@@ -16,7 +16,6 @@ namespace FFrameWork.UI
         // 同じ MusicId の難易度別 SongSelectEntry をまとめた表示単位
         private sealed class SongGroup
         {
-            public int MusicId;
             public string Title;
             public string Artist;
             public Texture Jacket;
@@ -272,7 +271,6 @@ namespace FFrameWork.UI
                 {
                     group = new SongGroup
                     {
-                        MusicId = song.MusicId,
                         Title = song.Title,
                         Artist = string.IsNullOrEmpty(song.Artist) ? song.Composer : song.Artist,
                         Jacket = song.Jacket

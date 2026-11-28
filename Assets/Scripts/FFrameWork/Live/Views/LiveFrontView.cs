@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using FFrameWork.Core;
 using UnityEngine;
 
 namespace FFrameWork.Live
@@ -13,17 +12,8 @@ namespace FFrameWork.Live
         // クリアゲージ 0 時の暗転マスク
         [SerializeField] private SpriteRenderer deadMask;
 
-        // 画面サイズに応じて Camera サイズを更新する補助コンポーネント
-        [SerializeField] protected CameraSizeUpdater cameraSizeUpdater;
-
-        // 画面サイズに応じて Camera FOV を更新する補助コンポーネント
-        [SerializeField] private CameraFOVUpdater cameraFOVUpdater;
-
         // ライブ前面表示用の Camera
         [SerializeField] private Camera frontViewCamera;
-
-        // プレビュー時の背景明るさ
-        [SerializeField] private float previewBrightness = 1f;
 
         [Header("Explicit Inspector Assignments (Performance Optimizations)")]
         // 自動探索を避けたい場合に明示指定する判定レーン
@@ -41,20 +31,10 @@ namespace FFrameWork.Live
         // フェード用に保持する SpriteRenderer ごとの初期アルファ
         private Dictionary<SpriteRenderer, float> spriteRendererAlphaDict;
 
-        // private Tween liveUiFadeTween;
-        // private Tween musicStartDelayTween;
-        // private Tween backgroundBrightnessTween;
-        // オートプレイ中か
-        private bool isAuto;
-
         // この判定でハプティック再生済みか
         private bool isPlayedHaptic;
 
         // エフェクト Camera の基準 FOV をキャッシュ済みか
-        private bool hasEffectCameraBaseFov;
-
-        // エフェクト Camera の基準 FOV
-        private float effectCameraBaseFov;
 
         // 前回エフェクト行列を更新した画面幅
         private int lastTapEffectMatrixScreenWidth = -1;
@@ -64,8 +44,6 @@ namespace FFrameWork.Live
 
         // 遅延してエフェクト行列を更新する残りフレーム数
         private int pendingTapEffectMatrixRefreshFrames;
-
-        private int clearGauge;
 
         // ノーツ表示とライン表示の管理クラス
         private NotesViewManager notesViewManager;
@@ -90,30 +68,22 @@ namespace FFrameWork.Live
             ResolveMissingReferences();
             ResolveDefaultAssets();
             this.baseController = baseController;
-            clearGauge = GetLiveMaxClearGauge();
-
-            clearGaugeView?.Setup(OnPause, clearGauge, GetLiveWarningClearGauge(), GetLiveClearGaugeThreshold());
+            clearGaugeView?.Setup(OnPause, GetLiveMaxClearGauge(), GetLiveWarningClearGauge(), GetLiveClearGaugeThreshold());
             if (baseController != null)
             {
                 LiveBootDataBase bootData = baseController.BootData;
                 scoreView?.Setup(bootData != null ? bootData.MusicData : null);
                 comboView?.Setup(baseController.Settings == null || baseController.Settings.UseAllPerfectEffect);
-                //cutinManager?.Setup(bootData, baseController);
-                //musicInfo?.Setup(bootData);
                 baseController.BaseCamera = frontViewCamera;
             }
 
-            //skillView?.Setup();
             countdownView?.Setup();
             screenEffectView?.Setup(baseController);
-            //consecutiveAutoLiveView?.Setup(OnConsecutiveAutoLivePause, OnConsecutiveAutoLiveResume, OnConsecutiveAutoLiveFinish, frontViewCamera);
             SetupBackground();
 
             if (fade != null) fade.enabled = false;
             if (autoLabel != null) autoLabel.SetActive(false);
-            //consecutiveAutoLiveView?.Hide();
 
-            isAuto = baseController != null && baseController.BootData != null && baseController.BootData.IsAuto;
             laneView?.Setup(baseController != null ? baseController.Settings : null);
 
 			notesViewManager = new NotesViewManager();
@@ -137,11 +107,9 @@ namespace FFrameWork.Live
         // score: 初期表示するスコア情報
         public override void SetupScore(LiveScore score)
         {
-            //cutinManager?.SetupScore(score);
             scoreView?.SetupScore(score);
             clearGaugeView?.Execute(score.clearGauge);
             comboView?.Excute(score);
-            clearGauge = score.clearGauge;
         }
 
         // スコアゲージ計算器をスコア表示へ渡す
@@ -156,32 +124,23 @@ namespace FFrameWork.Live
         {
             SetupTapEffect();
             UpdateSpriteAlpha(0f);
-            //cutinManager?.Load();
-            //skillView?.Load();
         }
 
         // ライブ解放時のビュー解放入口
         public override void OnUnload()
         {
-            //liveResultView?.Unload();
-            //skillView?.Unload();
-            //cutinManager?.Unload();
         }
 
         // 楽曲開始時の前面 UI 演出入口
         // time: 楽曲開始時刻
         public override void MusicStart(float time)
         {
-            //KillLiveTweens();
-            //UpdateSpriteAlpha(0f);
-            //musicStartDelayTween = DOVirtual.DelayedCall(0.1f, PlayMusicInfoAndFadeBackground, false).SetTarget(this);
         }
 
         // リズムゲーム開始時に画面依存レイアウトを更新して表示を開始する
         public override void RhythmGameStart()
         {
             RefreshScreenDependentLayout();
-            FadeIn();
         }
 
         // 画面サイズ変更時に Camera とエフェクト行列を更新する
@@ -198,15 +157,9 @@ namespace FFrameWork.Live
             longTapEffectView?.Clear();
             tapEffect?.Clear();
             comboView?.Clear();
-            //scoreView?.Clear();
             clearGaugeView?.Clear();
-            //cutinManager?.Clear();
-            //skillView?.Clear();
-            clearGauge = GetLiveMaxClearGauge();
 
             if (autoLabel != null) autoLabel.SetActive(false);
-            //consecutiveAutoLiveView?.Hide();
-            //KillLiveTweens();
             UpdateSpriteAlpha(0f);
         }
 
@@ -216,7 +169,6 @@ namespace FFrameWork.Live
             FadeOut();
         }
 
-        // public override void Result(LiveResultAnimationType animationType) => liveResultView?.Execute(animationType);
 
         // 背景 Renderer の Material を複製してライブ用に設定する
         private void SetupBackground()
@@ -224,7 +176,6 @@ namespace FFrameWork.Live
             if (backgroundRenderer == null) return;
 
             backgroundRenderer.sortingOrder = BackgroundSortingOrder;
-            //UpdateBackgroundSize();
 
             Material source = backgroundRenderer.material;
             if (source == null) return;
@@ -267,7 +218,6 @@ namespace FFrameWork.Live
 
             longTapEffectView.Setup(longHoldAuraPrefab, longHoldGenPrefab, longTapEffectPoolCount, baseController, soundPlayer);
             effectRoot.position = transform.position;
-            RefreshTapEffectCameraMatrices();
         }
 
         // ロングタップエフェクトを配置するルート Transform を解決する
@@ -303,17 +253,10 @@ namespace FFrameWork.Live
                 return;
             }
 
-            if (!hasEffectCameraBaseFov)
-            {
-                effectCameraBaseFov = effectCamera.fieldOfView;
-                hasEffectCameraBaseFov = true;
-            }
-
             if (effectRoot != null) effectRoot.position = transform.position;
 
             effectCamera.rect = frontViewCamera != null ? frontViewCamera.rect : new Rect(0f, 0f, 1f, 1f);
             effectCamera.aspect = GetTapEffectCameraAspect();
-            effectCamera.fieldOfView = CameraAspect.CalculateVerticalFov(effectCameraBaseFov);
             effectCamera.ResetProjectionMatrix();
 
             Shader.SetGlobalMatrix(ShaderPropertyID.TAP_EFFECT_VIEW_MATRIX_ID, effectCamera.worldToCameraMatrix);
@@ -328,7 +271,7 @@ namespace FFrameWork.Live
             Rect rect = frontViewCamera != null ? frontViewCamera.rect : new Rect(0f, 0f, 1f, 1f);
             float width = Screen.width * Mathf.Max(rect.width, 0.0001f);
             float height = Screen.height * Mathf.Max(rect.height, 0.0001f);
-            return height > 0f ? width / height : CameraAspect.TargetAspect;
+            return height > 0f ? width / height : 16f / 9f;
         }
 
         // 数フレーム後までタップエフェクト行列の再更新を予約する
@@ -382,19 +325,10 @@ namespace FFrameWork.Live
             }
         }
 
-        // 前面 UI のフェードインを開始する
-        private void FadeIn()
-        {
-            // if (liveUiFadeTween != null) { liveUiFadeTween.Kill(); liveUiFadeTween = null; }
-            // UpdateSpriteAlpha(0f);
-            // //liveUiFadeTween = DOVirtual.Float(0f, 1f, 2f, UpdateSpriteAlpha)...
-        }
-
         // 前面 UI を非表示にし、フェード Sprite を表示する
         private void FadeOut()
         {
             if (autoLabel != null) autoLabel.SetActive(false);
-            KillLiveTweens();
             UpdateSpriteAlpha(0f);
             if (fade != null)
             {
@@ -405,39 +339,11 @@ namespace FFrameWork.Live
             }
         }
 
-        // 楽曲情報表示と背景明るさフェードを開始する
-        private void PlayMusicInfoAndFadeBackground()
-        {
-            //musicInfo?.Play();
-            //musicStartDelayTween = null;
-            StartBackgroundBrightnessFade(GetTargetBrightness(), 2f);
-        }
-
-        // 背景明るさフェードを開始する
-        // brightness: 目標明るさ
-        // duration: フェード時間
-        private void StartBackgroundBrightnessFade(float brightness, float duration)
-        {
-            if (backgroundMaterial == null) return;
-            // if (backgroundBrightnessTween != null) { backgroundBrightnessTween.Kill(); backgroundBrightnessTween = null; }
-        }
-
-        // 設定から目標背景明るさを取得する
-        private float GetTargetBrightness() => (baseController != null && baseController.Settings != null) ? baseController.Settings.Brightness : previewBrightness;
-
         // ライブ設定から最大クリアゲージを取得する
         private int GetLiveMaxClearGauge()
         {
             LiveBundleBuildData data = baseController != null && baseController.BootData != null ? baseController.BootData.BundleBuildData : null;
             return data != null ? data.MaxClearGauge : LiveConfig.DefaultMaxClearGauge;
-        }
-
-        // 実行中のライブ UI Tween を停止する
-        private void KillLiveTweens()
-        {
-            // if (liveUiFadeTween != null) { liveUiFadeTween.Kill(); liveUiFadeTween = null; }
-            // if (musicStartDelayTween != null) { musicStartDelayTween.Kill(); musicStartDelayTween = null; }
-            // if (backgroundBrightnessTween != null) { backgroundBrightnessTween.Kill(); backgroundBrightnessTween = null; }
         }
 
         // ポーズボタン押下時にカウントダウン停止とライブ停止を行う
@@ -454,24 +360,10 @@ namespace FFrameWork.Live
         // カウントダウン表示を開始する
         public override void Countdown() => countdownView?.StartCountdown();
 
-        // 連続オートライブ用の一時停止入口
-        private void OnConsecutiveAutoLivePause() => baseController?.Pause();
-
-        // 連続オートライブ用の再開入口
-        private void OnConsecutiveAutoLiveResume()
-        {
-            baseController?.ResumeNoCountDown();
-        }
-
-        // 連続オートライブ用の終了入口
-        private void OnConsecutiveAutoLiveFinish() { }
-
         // 画面サイズに依存する Camera、背景、エフェクト行列を更新する
         private void RefreshScreenDependentLayout()
         {
             ResolveMissingReferences();
-            cameraSizeUpdater?.ForceUpdate();
-            cameraFOVUpdater?.ForceUpdate();
             UpdateBackgroundSize();
             RefreshTapEffectCameraMatrices();
         }
@@ -490,14 +382,6 @@ namespace FFrameWork.Live
                     FindComponentByName<Camera>("Front View Camera") ??
                     FindComponentByName<Camera>("Main Camera") ??
                     FindFirstCameraExcept(effectCamera);
-            }
-            if (cameraSizeUpdater == null)
-            {
-                cameraSizeUpdater = GetComponentInChildren<CameraSizeUpdater>(true);
-            }
-            if (cameraFOVUpdater == null)
-            {
-                cameraFOVUpdater = GetComponentInChildren<CameraFOVUpdater>(true);
             }
             if (liveRoot == null)
             {
@@ -641,11 +525,13 @@ namespace FFrameWork.Live
             ResolveMissingReferences();
         }
 
-        // 背景と死亡マスクを現在画面サイズへ合わせる
+        // 正投影カメラの表示範囲に背景と暗転マスクを合わせる。透視投影時は従来の基準高さを使う。
         private void UpdateBackgroundSize()
         {
-            float height = cameraSizeUpdater != null && cameraSizeUpdater.OrthographicSize > 0f ? cameraSizeUpdater.OrthographicSize * 2f : 10f;
-            float aspect = Screen.height == 0 ? 1f : (float)Screen.width / Screen.height;
+            float height = frontViewCamera != null && frontViewCamera.orthographic
+                ? frontViewCamera.orthographicSize * 2f
+                : 10f;
+            float aspect = GetTapEffectCameraAspect();
 
             if (backgroundRenderer != null) backgroundRenderer.transform.localScale = new Vector3(height * aspect, height, 1f);
             if (deadMask != null) deadMask.size = new Vector2(height * aspect, height);
@@ -722,7 +608,6 @@ namespace FFrameWork.Live
 
         public override void UpdateClearGauge(int clearGauge)
         {
-            this.clearGauge = clearGauge;
             clearGaugeView?.Execute(clearGauge);
         }
 
@@ -740,10 +625,8 @@ namespace FFrameWork.Live
             return data != null ? data.ClearGaugeThreshold : Mathf.FloorToInt(GetLiveMaxClearGauge() * 0.7f);
         }
 
-        // 破棄時に Tween と複製 Material を解放する
         private void OnDestroy()
         {
-            KillLiveTweens();
             if (backgroundMaterial != null)
             {
                 Destroy(backgroundMaterial);

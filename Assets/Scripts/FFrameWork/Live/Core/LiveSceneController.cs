@@ -1,5 +1,4 @@
 using System.Collections;
-using FFrameWork;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using FMOD.Studio;
@@ -29,18 +28,10 @@ namespace FFrameWork.Live
         [SerializeField, Range(1, 16)] private int previewInitialArrowLaneWidth = 2;
         [SerializeField] private string previewTitle = "DefaultMusic";
         [SerializeField] private string previewArtist = "Miku";
-        [SerializeField] private string previewLyricist = "Miku";
         [SerializeField] private string previewComposer = "Miku";
-        [SerializeField] private string previewArranger = "Miku";
-        [SerializeField] private string previewVocalCaption = "Miku";
-        [SerializeField] private string previewVocalType = "Miku";
-        [SerializeField] private string previewVocalAssetBundleName;
         [SerializeField] private Texture2D previewJacket;
         [SerializeField] private bool isAuto;
         [SerializeField] private bool canSkipDisplayMusicInfo;
-        [SerializeField] private bool isCollaboration;
-        [SerializeField] private int collaborationId;
-        [SerializeField] private string collaborationLabel;
         [SerializeField] private bool startOnAwake = true;
         [SerializeField] private bool musicStartOnAwake = true;
         [SerializeField] private float liveStartWaitTime = BaseGameStartWaitTime;
@@ -99,7 +90,6 @@ namespace FFrameWork.Live
             ApplyLiveFrameRateSettings();
             EnsureBackgroundTexture();
             SetupLiveViews();
-            SetupLiveOutUIController();
             CacheScreenSize();
 
             if (!musicStartOnAwake)
@@ -134,7 +124,6 @@ namespace FFrameWork.Live
         // 再生、コルーチン、ロジック、View を初期状態へ戻す
         public void ResetLive()
         {
-            DestroyActivePauseDialog();
             if (liveStartCoroutine != null)
             {
                 StopCoroutine(liveStartCoroutine);
@@ -394,7 +383,6 @@ namespace FFrameWork.Live
 
             if (isPaused)
             {
-                ShowPauseDialog();
                 return;
             }
 
@@ -403,7 +391,6 @@ namespace FFrameWork.Live
             adjustedMusicTime = GetAdjustedMusicTime(currentMusicTime);
             PauseMusic();
             NotifyPause(adjustedMusicTime);
-            ShowPauseDialog();
         }
 
         // カウントダウン付きでライブ再開を開始する
@@ -419,41 +406,7 @@ namespace FFrameWork.Live
             {
                 StopCoroutine(resumeCoroutine);
             }
-            DestroyActivePauseDialog();
             resumeCoroutine = StartCoroutine(ResumeCoroutine());
-        }
-
-        // カウントダウンなしでライブを即時再開する
-        public override void ResumeNoCountDown()
-        {
-            if (!isRhythmGameRunning || !isPaused || result != LiveResult.None)
-            {
-                return;
-            }
-
-            if (resumeCoroutine != null)
-            {
-                StopCoroutine(resumeCoroutine);
-                resumeCoroutine = null;
-            }
-            DestroyActivePauseDialog();
-            ResumeLiveNow();
-        }
-
-        // FMOD イベントのパラメータ値を取得する
-        // parameterName: 取得対象のパラメータ名
-        // value: 取得できた値
-        public override bool TryGetMusicEventParameter(string parameterName, out float value)
-        {
-            value = 0f;
-            if (string.IsNullOrEmpty(parameterName) ||
-                !hasMusicEventInstance ||
-                !musicEventInstance.isValid())
-            {
-                return false;
-            }
-
-            return musicEventInstance.getParameterByName(parameterName, out value) == FMOD.RESULT.OK;
         }
 
         // FMOD イベントのパラメータ値を設定する
@@ -501,13 +454,6 @@ namespace FFrameWork.Live
             {
                 BootData.IsAuto = isAuto;
             }
-        }
-
-        // オートプレイ設定を反転して返す
-        public bool ToggleAutoPlay()
-        {
-            SetAutoPlay(!IsAutoPlay);
-            return IsAutoPlay;
         }
 
         // パネル退出時にライブを停止し、最後の結果を強制設定する
@@ -744,7 +690,6 @@ namespace FFrameWork.Live
                 StopCoroutine(resumeCoroutine);
                 resumeCoroutine = null;
             }
-            DestroyActivePauseDialog();
             result = requestedResult != LiveResult.None
                 ? requestedResult
                 : liveLogic != null && liveLogic.Result == LiveResult.Failure ? LiveResult.Clear : liveLogic != null ? liveLogic.Result : LiveResult.None;
@@ -777,9 +722,7 @@ namespace FFrameWork.Live
         // waitTime: 結果表示中の待機時間
         private IEnumerator ResultAnim(float waitTime = 4f)
         {
-            //liveViews.Result(GetLiveResultAnimationType());
             yield return new WaitForSeconds(waitTime);
-            //liveViews.Finish();
             yield return new WaitForSeconds(2f);
             Exit();
         }
@@ -800,21 +743,6 @@ namespace FFrameWork.Live
             int maxClearGauge = GetConfiguredMaxClearGauge();
             int clearGaugeThreshold = liveBundleBuildData != null ? liveBundleBuildData.ClearGaugeThreshold : Mathf.FloorToInt(maxClearGauge * 0.7f);
             return Mathf.Clamp(clearGaugeThreshold, 1, maxClearGauge);
-        }
-
-        // ライブをリセットして再挑戦する
-        protected virtual void Retry()
-        {
-            ResetLive();
-            StartLive();
-        }
-
-        // ライブをリタイア扱いで終了する
-        protected virtual void Retire()
-        {
-            DestroyActivePauseDialog();
-            result = LiveResult.Retire;
-            PreExit();
         }
 
         // LiveLogic のイベント購読を解除し、ロジックを破棄する
@@ -1142,11 +1070,6 @@ namespace FFrameWork.Live
                 return;
             }
 
-            // if (liveOutUIController != null && liveOutUIController.ActiveDialog != null)
-            // {
-            //     liveOutUIController.ExecuteBackKeyProcess();
-            //     return;
-            // }
 
             if (isPaused)
             {
@@ -1157,107 +1080,5 @@ namespace FFrameWork.Live
                 Pause();
             }
         }
-
-        // 既存のポーズダイアログを破棄してからポーズダイアログを表示する
-        private void ShowPauseDialog()
-        {
-            DestroyActivePauseDialog();
-            ShowPauseDialogInternal();
-        }
-
-        // ポーズダイアログ本体を表示する
-        private void ShowPauseDialogInternal()
-        {
-            // if (liveOutUIController == null)
-            // {
-            //     return;
-            // }
-
-            // if (AutoLiveUtility.IsRunningConsecutiveAutoLive())
-            // {
-            //     liveOutUIController.ShowConsecutiveAutoLivePauseDialog(Resume, ShowConsecutiveAutoLiveRetireDialog);
-            //     return;
-            // }
-
-            //liveOutUIController.ShowPauseDialog(Resume, OnRetireConfirm, OnRetryConfirm);
-        }
-
-        // ライブ退出 UI の初期化を行う
-        private void SetupLiveOutUIController()
-        {
-            // if (liveOutUIController == null)
-            // {
-            //     liveOutUIController = GetComponent<LiveOutUIController>();
-            // }
-            //
-            // if (liveOutUIController == null)
-            // {
-            //     return;
-            // }
-
-            LivePlayMode currentPlayMode = BootData != null ? BootData.LivePlayMode : livePlayMode;
-            //liveOutUIController.Initialize(currentPlayMode, BaseCamera);
-        }
-
-        // リタイア確認ダイアログを表示する
-        private void OnRetireConfirm()
-        {
-            ShowConfirmRetireDialog();
-        }
-
-        // リトライ確認ダイアログを表示する
-        private void OnRetryConfirm()
-        {
-            ShowConfirmRetryDialog();
-        }
-
-        // 確認ダイアログを閉じてポーズダイアログへ戻る
-        private void OnConfirmCancel()
-        {
-            ShowPauseDialogInternal();
-        }
-
-        // リタイア確認ダイアログを表示する
-        private void ShowConfirmRetireDialog()
-        {
-            // if (liveOutUIController == null)
-            // {
-            //     OnConfirmCancel();
-            //     return;
-            // }
-            //
-            // liveOutUIController.ShowConfirmRetireDialog(Retire, OnConfirmCancel);
-        }
-
-        // リトライ確認ダイアログを表示する
-        private void ShowConfirmRetryDialog()
-        {
-            // if (liveOutUIController == null)
-            // {
-            //     OnConfirmCancel();
-            //     return;
-            // }
-            //
-            // liveOutUIController.ShowConfirmRetryDialog(Retry, OnConfirmCancel);
-        }
-
-        // 連続オートライブ中のリタイア確認ダイアログを表示する
-        private void ShowConsecutiveAutoLiveRetireDialog()
-        {
-            // if (liveOutUIController == null)
-            // {
-            //     Resume();
-            //     return;
-            // }
-            //
-            // liveOutUIController.ShowConsecutiveAutoLiveConfirmRetireDialog(Retire, Resume);
-        }
-
-        // 表示中のポーズ関連ダイアログを破棄する
-        private void DestroyActivePauseDialog()
-        {
-            //liveOutUIController?.DestroyInstance();
-        }
-
     }
 }

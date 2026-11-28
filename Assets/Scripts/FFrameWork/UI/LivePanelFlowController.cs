@@ -116,11 +116,6 @@ namespace FFrameWork.UI
 
         // 現在選択中の楽曲
         public SongSelectEntry SelectedSong => selectedSong;
-        public int SelectedMusicId => selectedSong != null ? selectedSong.MusicId : 0;
-        public string SelectedTitle => selectedSong != null ? selectedSong.Title : string.Empty;
-        public string SelectedArtist => selectedSong != null ? GetArtist(selectedSong) : string.Empty;
-        public Texture2D SelectedJacket => selectedSong != null ? selectedSong.Jacket : null;
-        public MusicDifficulty SelectedDifficulty => selectedSong != null ? selectedSong.Difficulty : MusicDifficulty.None;
         public LiveScore LastScore => liveController != null ? liveController.LastScore : default(LiveScore);
         public LiveResult LastResult => liveController != null ? liveController.LastResult : LiveResult.None;
         public bool LastWasAuto => liveController != null && liveController.LastWasAuto;
@@ -150,20 +145,6 @@ namespace FFrameWork.UI
                 LivePlayerSettings.SetAutoPlay(enabled);
             }
 
-            return true;
-        }
-
-        // 現在の画面で許可されていればオートプレイ状態を反転する
-        public bool TryToggleAutoPlay(out bool enabled)
-        {
-            enabled = IsAutoPlay;
-            if (!CanUseAutoPlaySwitch)
-            {
-                return false;
-            }
-
-            enabled = !enabled;
-            TrySetAutoPlay(enabled);
             return true;
         }
 
@@ -345,10 +326,6 @@ namespace FFrameWork.UI
         }
 
         // Artist が空なら Composer を表示名として使う
-        private static string GetArtist(SongSelectEntry song)
-        {
-            return string.IsNullOrEmpty(song.Artist) ? song.Composer : song.Artist;
-        }
 
         // タイトル相当の開始パネルを表示する
         public void ShowGameStartPanel()
